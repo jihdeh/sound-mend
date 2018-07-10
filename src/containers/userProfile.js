@@ -7,12 +7,34 @@ import { getContestants } from '../actions/miscActions';
 import { updateProfile } from '../actions/profileActions';
 
 class UserProfile extends Component {
-  onUpdateQualification(isQualified, username) {
-    this.props.updateProfile({ isQualified, username });
+  state = {
+    qualifiedVideoUrl: null,
+    hasUpdated: false
+  };
+
+  componentWillReceiveProps(nextProps) {
+    console.log(this.props.profile, nextProps.profile);
+    if (
+      this.props.profile.profileUpdated !== nextProps.profile.profileUpdated
+    ) {
+      // this.setState({
+      //   hasUpdated: true
+      // });
+      window.location.reload();
+    }
+  }
+
+  onUpdateQualification(qualifiedVideoUrl, username) {
+    this.props.updateProfile({
+      qualifiedVideoUrl,
+      isQualified: true,
+      username
+    });
   }
 
   render() {
     const { allUsers } = this.props;
+    const { hasUpdated, qualifiedVideoUrl } = this.state;
     const parseUrl = queryString.parse(window.location.search, {
       ignoreQueryPrefix: true
     });
@@ -43,25 +65,44 @@ class UserProfile extends Component {
                     State: {contestant.state}, Country: {contestant.country}
                   </p>
                   <p>Number of votes {contestant.numberOfVotesAttained}</p>
-                  <div>
-                    {contestant.qualified === true ? (
-                      <p>Qualified?: Yes</p>
-                    ) : (
-                      <span>
+                  <p>Qualified?: {contestant.qualified ? 'Yes' : 'No'}</p>
+                  {!contestant.qualified && (
+                    <div>
+                      <p>
+                        EDIT THE LINKS TO LOOK LIKE THIS
+                        https://www.youtube.com/embed/WbHYraTWEOA, where the
+                        "-AU2is92i0" IS THE KEY TO THE VIDEO
+                      </p>
+                      <label htmlFor="qualified">
+                        Enter qualified candidates new video
+                      </label>
+                      <div>
+                        <input
+                          type="text"
+                          id="qualified"
+                          className="form-control"
+                          style={{ height: '30px', width: '150px' }}
+                          placeholder="Enter youtube url"
+                          onChange={({ target }) =>
+                            this.setState({
+                              qualifiedVideoUrl: target.value
+                            })
+                          }
+                        />
                         <button
                           onClick={() =>
                             this.onUpdateQualification(
-                              true,
+                              qualifiedVideoUrl,
                               contestant.username
                             )
                           }
                         >
-                          HasQualified?
+                          SUBMIT VIDEO
                         </button>
-                        <p>Click this button once then refresh</p>
-                      </span>
-                    )}
-                  </div>
+                      </div>
+                      <p>{hasUpdated}</p>
+                    </div>
+                  )}
                   <div>
                     {get(contestant, 'qualifiedVideo.length') ? (
                       <iframe
@@ -86,8 +127,9 @@ class UserProfile extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  allUsers: state.misc.searchResults
+const mapStateToProps = ({ misc, profile }) => ({
+  allUsers: misc.searchResults,
+  profile: profile
 });
 
 const mapDispatchToProps = dispatch => ({

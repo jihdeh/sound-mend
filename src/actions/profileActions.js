@@ -30,10 +30,17 @@ export const getProfile = username => async dispatch => {
   }
 };
 
-export const updateProfile = ({ isQualified, username }) => async dispatch => {
+export const updateProfile = ({
+  isQualified,
+  username,
+  qualifiedVideoUrl
+}) => async dispatch => {
   try {
     const url = `${process.env.REACT_APP_BASE_URL}/auth/${username}`;
-    await axios.put(url, { qualified: isQualified });
+    await axios.put(url, {
+      qualified: isQualified,
+      qualifiedVideo: qualifiedVideoUrl
+    });
     await dispatch({
       type: UPDATE_PROFILE,
       payload: true
