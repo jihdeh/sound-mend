@@ -4,8 +4,13 @@ import { bindActionCreators } from 'redux';
 import queryString from 'qs';
 import get from 'lodash/get';
 import { getContestants } from '../actions/miscActions';
+import { updateProfile } from '../actions/profileActions';
 
 class UserProfile extends Component {
+  onUpdateQualification(isQualified, username) {
+    this.props.updateProfile({ isQualified, username });
+  }
+
   render() {
     const { allUsers } = this.props;
     const parseUrl = queryString.parse(window.location.search, {
@@ -18,10 +23,7 @@ class UserProfile extends Component {
           allUsers.map((contestant, key) => {
             if (contestant.username === parseUrl.username) {
               return (
-                <div
-                  key={key}
-                  onClick={() => this.redirect(contestant.username)}
-                >
+                <div key={key}>
                   <p>
                     Fullname: {contestant.firstName} {contestant.lastName}
                   </p>
@@ -42,11 +44,30 @@ class UserProfile extends Component {
                   </p>
                   <p>Number of votes {contestant.numberOfVotesAttained}</p>
                   <div>
-                    {get(contestant, 'contestantVideo.length') ? (
+                    {contestant.qualified === true ? (
+                      <p>Qualified?: Yes</p>
+                    ) : (
+                      <span>
+                        <button
+                          onClick={() =>
+                            this.onUpdateQualification(
+                              true,
+                              contestant.username
+                            )
+                          }
+                        >
+                          HasQualified?
+                        </button>
+                        <p>Click this button once then refresh</p>
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    {get(contestant, 'qualifiedVideo.length') ? (
                       <iframe
                         width="100%"
                         height="300px"
-                        src={contestant.contestantVideo[0]}
+                        src={contestant.qualifiedVideo[0]}
                         title="Contestant video 2"
                         frameBorder="0"
                         allow="autoplay; encrypted-media"
@@ -70,7 +91,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  getContestants: bindActionCreators(getContestants, dispatch)
+  getContestants: bindActionCreators(getContestants, dispatch),
+  updateProfile: bindActionCreators(updateProfile, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserProfile);
